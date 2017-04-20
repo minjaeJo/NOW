@@ -6,6 +6,6 @@ target 'now' do
   use_frameworks!
 
   # Pods for now
-  pod 'GoogleMaps'
+  pod 'GoogleMaps' 
   pod 'GooglePlaces'
 end

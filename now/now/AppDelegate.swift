@@ -15,12 +15,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-
+    var googleAPIKey = "AIzaSyDDb78kqx1F03V1yE9at-r2QWfDRZK9BGM"
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        GMSServices.provideAPIKey("AIzaSyDDb78kqx1F03V1yE9at-r2QWfDRZK9BGM")
-        GMSPlacesClient.provideAPIKey("AIzaSyDDb78kqx1F03V1yE9at-r2QWfDRZK9BGM")
+        GMSServices.provideAPIKey(googleAPIKey)
+        GMSPlacesClient.provideAPIKey(googleAPIKey)
         return true
     }
 
