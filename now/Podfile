@@ -8,4 +8,6 @@ target 'now' do
   # Pods for now
   pod 'GoogleMaps' 
   pod 'GooglePlaces'
+  pod 'SwiftyJSON'
+  pod 'Alamofire'
 end
