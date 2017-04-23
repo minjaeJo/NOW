@@ -25,8 +25,8 @@ class MapViewController: UIViewController,GMSMapViewDelegate, CLLocationManagerD
     var locationManager = CLLocationManager()
     var locationSelected = Location.startLocation
     
-    var locationStart = CLLocation()
-    var locationDestination = CLLocation()
+
+    var locationArray = [CLLocationCoordinate2D]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,8 +37,8 @@ class MapViewController: UIViewController,GMSMapViewDelegate, CLLocationManagerD
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.startMonitoringSignificantLocationChanges()
         
-        //googleMapsView - 지도 생성 및 표시
-        let camera = GMSCameraPosition.camera(withLatitude: 37.405614, longitude: 127.106064, zoom: 15.0)
+        //googleMapsView - 지도 생성 및 표시18.471522, -69.940598
+        let camera = GMSCameraPosition.camera(withLatitude: 18.471522, longitude: -69.940598, zoom: 15.0)
         self.googleMaps.camera = camera
         self.googleMaps.delegate = self
         self.googleMaps?.isMyLocationEnabled = true
@@ -55,56 +55,35 @@ class MapViewController: UIViewController,GMSMapViewDelegate, CLLocationManagerD
         marker.map = googleMaps
     }
     
-// Part - Delegate : Location Manager Delegate
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Error to get lotation \(error)")
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        let location = locations.last
-        //let camera = GMSCameraPosition.camera(withLatitude: (location?.coordinate.latitude)!, longitude: (location?.coordinate.longitude)!, zoom: 16.0)
-        
-        let locationTujuan = CLLocation(latitude: 38.083229, longitude: -122.011622)
-        
-        createMarker(titleMarker: "1", iconMarker: #imageLiteral(resourceName: "DPin") , latitude: locationTujuan.coordinate.latitude , longitude: locationTujuan.coordinate.longitude)
-        
-        createMarker(titleMarker: "2", iconMarker: #imageLiteral(resourceName: "SPin") , latitude: (location?.coordinate.latitude)! , longitude:
-            (location?.coordinate.longitude)!)
-        
-        drawPath(startLocation: locationTujuan, endLocation: location!)
-        //self.googleMaps?.animate(to: camera)
-        self.locationManager.stopUpdatingLocation()
-    }
-    
 // Part - Delegate : GMSMapViewDelegate
     func mapView(_ mapView: GMSMapView, idleAt position: GMSCameraPosition) {
         googleMaps.isMyLocationEnabled = true
     }
-        // 내가 해당 좌표를 누를 때마다 좌표값 표시
-    func mapView(_ mapView: GMSMapView, didTapAt coordinate: CLLocationCoordinate2D) {
-        print("coordinate = \(coordinate)")
-    }
     
-    func didTapMyLocationButton(for mapView: GMSMapView) -> Bool {
-        googleMaps.isMyLocationEnabled = true
-        googleMaps.selectedMarker = nil
-        return false
+    // 내가 해당 좌표를 누를 때마다 좌표값 표시
+    func mapView(_ mapView: GMSMapView, didTapAt coordinate: CLLocationCoordinate2D) {
+        locationArray.append(coordinate)
+        if locationArray.count == 3 {
+            locationArray.remove(at: 0)
+        }
+        print("coordinate = \(coordinate.latitude),\(coordinate.longitude)")
+        
     }
     
 // Part - Method : 출발지와 도착지의 경로를 생성하는 기능 - Directions API
-    func drawPath(startLocation: CLLocation, endLocation : CLLocation ) {
-        let origin = "\(startLocation.coordinate.latitude), \(startLocation.coordinate.longitude)"
-        let destination = "\(endLocation.coordinate.latitude), \(startLocation.coordinate.longitude)"
+    func drawPath(startLocation: CLLocationCoordinate2D, endLocation : CLLocationCoordinate2D ) {
+        let origin = "\(startLocation.latitude),\(startLocation.longitude)"
+        let destination = "\(endLocation.latitude),\(startLocation.longitude)"
         
-        let url = "https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)4&mode=walking "
+        let url = "https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)&way=walking"
         
-        Alamofire.request(url).responseJSON{ response in
-            print(response.request as Any)
-            print(response.response as Any)
-            print(response.data as Any)
-            print(response.result as Any)
+        Alamofire.request(url).responseJSON{ responds in
+            print(responds.request as Any)
+            print(responds.response as Any)
+            print(responds.data as Any)
+            print(responds.result as Any)
             
-            let json = JSON(data: response.data!)
+            let json = JSON(data: responds.data!)
             let routes = json["routes"].arrayValue
             
             // 출발점과 도착점을 polyline으로 연결하기
@@ -118,6 +97,16 @@ class MapViewController: UIViewController,GMSMapViewDelegate, CLLocationManagerD
                 polyline.map = self.googleMaps
             }
         }
+    }
+
+    @IBAction func showDirection(_ sender: Any) {
+        let startLocation = locationArray[0]
+        let destinationLocation = locationArray[1]
+
+        self.googleMaps.clear()
+        self.drawPath(startLocation: startLocation, endLocation: destinationLocation)
+        createMarker(titleMarker: "출발점", iconMarker: #imageLiteral(resourceName: "startPin"), latitude: startLocation.latitude, longitude: startLocation.longitude)
+//        createMarker(titleMarker: "도착점", iconMarker: #imageLiteral(resourceName: "endPin"), latitude: destinationLocation.latitude, longitude: destinationLocation.longitude)
     }
     
     
